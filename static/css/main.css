@@ -1,0 +1,61 @@
+@layer reset, typography, colors, global, utils;
+
+@import url('reset.css');
+@import url('typography.css');
+@import url('colors.css');
+@import url('utils.css');
+
+@layer global {
+	:root {
+		--spacing-1: 0.25rem;
+		--spacing-2: 0.5rem;
+		--spacing-3: 0.75rem;
+		--spacing-4: 1rem;
+		--spacing-5: 1.25rem;
+		--spacing-6: 1.5rem;
+		--spacing-7: 1.75rem;
+		--spacing-8: 2rem;
+		--spacing-9: 2.25rem;
+		--spacing-10: 2.5rem;
+		--spacing-11: 2.75rem;
+		--spacing-12: 3rem;
+		--spacing-13: 3.25rem;
+		--spacing-14: 3.5rem;
+		--spacing-15: 3.75rem;
+		--spacing-16: 4rem;
+		--spacing-20: 5rem;
+		--spacing-24: 6rem;
+		--spacing-32: 8rem;
+
+		--radius-xs: 0.125rem; /* 2px */
+		--radius-sm: 0.25rem; /* 4px */
+		--radius-md: 0.375rem; /* 6px */
+		--radius-lg: 0.5rem; /* 8px */
+		--radius-xl: 0.75rem; /* 12px */
+		--radius-2xl: 1rem; /* 16px */
+
+		--max-w-3xs: 16rem; /* 256px */
+		--max-w-2xs: 18rem; /* 288px */
+		--max-w-xs: 20rem; /* 320px */
+		--max-w-sm: 24rem; /* 384px */
+		--max-w-md: 28rem; /* 448px */
+		--max-w-lg: 32rem; /* 512px */
+		--max-w-xl: 36rem; /* 576px */
+		--max-w-2xl: 42rem; /* 672px */
+		--max-w-3xl: 48rem; /* 768px */
+		--max-w-4xl: 56rem; /* 896px */
+		--max-w-5xl: 64rem; /* 1024px */
+		--max-w-6xl: 72rem; /* 1152px */
+		--max-w-7xl: 80rem; /* 1280px */
+		--max-w-8xl: 90rem; /* 1440px */
+
+		--shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+		--shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+		--shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+		--shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+		--shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+		--shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+
+		--border: 1px solid var(--gray-100);
+	}
+}

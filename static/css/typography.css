@@ -1,0 +1,17 @@
+@layer typography {
+	:root {
+		--fs-xs: 0.75rem; /* 12px */
+		--fs-sm: 0.875rem; /* 14px */
+		--fs-md: 1rem; /* 16px */
+		--fs-lg: 1.125rem; /* 18px */
+		--fs-xl: 1.25rem; /* 20px */
+		--fs-2xl: 1.5rem; /* 24px */
+		--fs-3xl: 1.875rem; /* 30px */
+		--fs-4xl: 2.25rem; /* 36px */
+		--fs-5xl: 3rem; /* 48px */
+	}
+
+	body {
+		color: var(--gray-900);
+	}
+}
