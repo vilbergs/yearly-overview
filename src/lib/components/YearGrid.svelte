@@ -4,6 +4,10 @@
 		set_color: (color: TagColor | undefined) => void;
 		/** Shows only days with this color; undefined shows everything again. */
 		highlight: (color: TagColor | undefined) => void;
+		/** Shifts the event (or selection) by `days`. */
+		move: (days: number) => void;
+		/** Lengthens (positive) or shortens the event (or selection) at its end. */
+		resize: (days: number) => void;
 		details: () => void;
 		go_to: (key: string) => void;
 		message: (text: string) => void;
@@ -47,6 +51,8 @@
 		highlight?: TagColor;
 		/** Public holiday names keyed by date. */
 		holidays?: Record<string, string>;
+		/** Mute days before today so what's left of the year stands out. */
+		fade_past?: boolean;
 	};
 
 	let {
@@ -58,7 +64,8 @@
 		anchor = $bindable(),
 		actions,
 		highlight,
-		holidays = {}
+		holidays = {},
+		fade_past = false
 	}: Props = $props();
 
 	type Direction = 'up' | 'down' | 'left' | 'right';
@@ -215,6 +222,12 @@
 		if (event.key in ARROWS && !mod && !event.altKey) {
 			event.preventDefault();
 			move(ARROWS[event.key], event.shiftKey);
+		} else if (event.key in ARROWS && event.altKey && !mod) {
+			// Alt+↑/↓ nudges by a day, Alt+←/→ by a week; with Shift the end moves instead.
+			event.preventDefault();
+			const days = { up: -1, down: 1, left: -7, right: 7 }[ARROWS[event.key]];
+			if (event.shiftKey) actions.resize(days);
+			else actions.move(days);
 		} else if (event.key === 'Home' || event.key === 'End') {
 			event.preventDefault();
 			const start = event.key === 'Home';
@@ -359,6 +372,7 @@
 			class:holiday={!!holidays[day.key]}
 			class:week-start={day.weekday === 1 && day.day !== 1}
 			class:today={day.key === today}
+			class:past={fade_past && day.key < today}
 			class:active={day.key === active}
 			class:targeted={is_range && target_set.has(day.key)}
 			class:has-entry={!!entry}
@@ -515,6 +529,24 @@
 
 		&.continued {
 			border-bottom-color: transparent;
+		}
+
+		/* Muted, not transparent: past text keeps readable contrast. */
+		&.past {
+			background-color: var(--surface-muted);
+
+			& .title {
+				font-weight: 400;
+				color: var(--text-muted);
+			}
+
+			&.tagged {
+				background-color: oklch(var(--tag-l) calc(var(--tag-c) * 0.35) var(--hue));
+			}
+
+			&.tagged::before {
+				opacity: 0.5;
+			}
 		}
 
 		&.dimmed {

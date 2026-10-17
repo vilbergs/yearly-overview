@@ -39,7 +39,7 @@ export const SHORTCUTS: ShortcutGroup[] = [
 				label: 'First / last day of the year'
 			},
 			{ keys: [['Page Up'], ['Page Down']], label: 'Previous / next year' },
-			{ keys: [[MOD, 'K']], label: 'Search, go to a date or run a command' }
+			{ keys: [[MOD, 'K']], label: 'Search, go to a date, run a command or quick-add' }
 		]
 	},
 	{
@@ -61,6 +61,9 @@ export const SHORTCUTS: ShortcutGroup[] = [
 			{ keys: [[ALT, '1–6']], label: 'Set color' },
 			{ keys: [[ALT, '0']], label: 'Remove color' },
 			{ keys: [[ALT, 'Shift', '1–6']], label: 'Highlight a category (Esc clears)' },
+			{ keys: [[ALT, '↑ ↓']], label: 'Move the event a day earlier / later' },
+			{ keys: [[ALT, '← →']], label: 'Move the event a week earlier / later' },
+			{ keys: [[ALT, 'Shift', '↑ ↓ ← →']], label: 'Shorten / lengthen the event' },
 			{ keys: [['Delete'], ['Backspace']], label: 'Clear' },
 			{
 				keys: [

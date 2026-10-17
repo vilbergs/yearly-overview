@@ -20,6 +20,18 @@ start typing.
 | Search, go to a date, commands  | <kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>K</kbd> (try `14 mar`, `2027`, `vacation`)       |
 | All shortcuts                   | <kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>/</kbd>                                          |
 
+**Quick add:** type what and when into <kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>K</kbd> and the first
+result previews it, e.g. `Vacation jul 6-10 #holiday`, `Dentist fri #health`, `Conference week
+32` (or `v32`), `Trip jul 6 for 5 days`, `Hotel nov 2 for 3 nights`, `Follow-up in 2 weeks`.
+Dates without a year mean the next time they come around; `#name` picks a category.
+
+**Moving events:** <kbd>Alt</kbd>+<kbd>↑</kbd>/<kbd>↓</kbd> moves the event under the cursor a
+day, <kbd>Alt</kbd>+<kbd>←</kbd>/<kbd>→</kbd> a week; add <kbd>Shift</kbd> to shorten or
+lengthen it instead. Other plans are never overwritten, and every move can be undone.
+
+**Time awareness:** past days are muted (toggle with "Mute past days" in the palette) and the
+toolbar shows what's on now or next, with a countdown; click it to jump there.
+
 Consecutive days with the same title, description and color are shown as one block. Edits,
 colors and deletes apply to the whole block under the cursor; select part of it with
 <kbd>Shift</kbd>+arrows to change only those days.

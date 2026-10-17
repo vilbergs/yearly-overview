@@ -17,7 +17,12 @@ export class Planner {
 		readonly server_sync = false
 	) {}
 
-	async open(options: { entries?: Record<string, Entry> } = {}) {
+	async open(
+		options: {
+			entries?: Record<string, Entry>;
+			settings?: { categories: Record<string, string> };
+		} = {}
+	) {
 		await this.page.clock.setFixedTime(new Date(`${TODAY}T10:00:00`));
 		if (!this.server_sync) {
 			await this.page.route('**/api/**', (route) =>
@@ -35,6 +40,14 @@ export class Planner {
 				},
 				[STORAGE_KEY, JSON.stringify(options.entries)]
 			);
+		}
+		if (options.settings) {
+			await this.page.addInitScript((value) => {
+				if (!sessionStorage.getItem('seeded-settings')) {
+					localStorage.setItem('yearly-overview:settings:v1', value);
+					sessionStorage.setItem('seeded-settings', '1');
+				}
+			}, JSON.stringify(options.settings));
 		}
 		await this.page.goto('/');
 		await expect(this.cell(TODAY)).toBeFocused();

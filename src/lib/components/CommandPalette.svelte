@@ -1,4 +1,12 @@
 <script lang="ts" module>
+	/** A result offered for what was typed, e.g. "Add “Dentist” on Fri, Oct 23". */
+	export type Suggestion = {
+		label: string;
+		detail?: string;
+		hue?: number;
+		run: () => void;
+	};
+
 	export type Command = {
 		id: string;
 		label: string;
@@ -23,9 +31,11 @@
 		holidays?: Record<string, string>;
 		ongo: (key: string) => void;
 		onclose: () => void;
+		/** Turns the query into an action shown first, such as quick-adding an entry. */
+		suggest?: (query: string) => Suggestion | null;
 	};
 
-	let { commands, entries, year, holidays = {}, ongo, onclose }: Props = $props();
+	let { commands, entries, year, holidays = {}, ongo, onclose, suggest }: Props = $props();
 
 	type Result = {
 		id: string;
@@ -60,6 +70,9 @@
 
 	const results = $derived.by((): Result[] => {
 		const found: Result[] = [];
+
+		const suggestion = query.trim() ? suggest?.(query) : null;
+		if (suggestion) found.push({ id: 'suggestion', ...suggestion });
 
 		const date = parse_date_query(query, year);
 		if (date) {
@@ -147,7 +160,7 @@
 		aria-controls="palette-results"
 		aria-activedescendant={results[selected] ? `palette-${results[selected].id}` : undefined}
 		aria-autocomplete="list"
-		placeholder="Search entries, type a date (14 mar, 2027) or a command…"
+		placeholder="Search, jump to a date, or add: “Dentist fri #health”"
 		bind:value={query}
 		oninput={() => (selected = 0)}
 		onkeydown={(event) => {

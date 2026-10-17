@@ -3,6 +3,7 @@
 	import {
 		MAX_YEAR,
 		MIN_YEAR,
+		add_days,
 		get_days_of_year,
 		parse_date_key,
 		same_day_in_year,
@@ -17,6 +18,7 @@
 		get_browser_storage,
 		normalize_entry,
 		parse_backup,
+		same_entry,
 		type Entry,
 		type TagColor
 	} from '$lib/entries';
@@ -32,11 +34,15 @@
 		type Settings
 	} from '$lib/settings';
 	import { STATUS_LABELS, SYNC_KEY, Sync } from '$lib/sync.svelte';
-	import { target_keys } from '$lib/selection';
+	import { list_runs, target_keys } from '$lib/selection';
+	import { parse_quick_add } from '$lib/quick-add';
 	import CategoriesDialog from '$lib/components/CategoriesDialog.svelte';
 	import HolidaysDialog from '$lib/components/HolidaysDialog.svelte';
 	import { get_holidays } from '$lib/holidays';
-	import CommandPalette, { type Command } from '$lib/components/CommandPalette.svelte';
+	import CommandPalette, {
+		type Command,
+		type Suggestion
+	} from '$lib/components/CommandPalette.svelte';
 	import EntryDialog from '$lib/components/EntryDialog.svelte';
 	import ShortcutsDialog from '$lib/components/ShortcutsDialog.svelte';
 	import YearGrid, { type GridActions } from '$lib/components/YearGrid.svelte';
@@ -160,6 +166,163 @@
 		);
 	}
 
+	// ── Experiments: quick add, moving events, time awareness ────────────────
+
+	const UI_KEY = 'yearly-overview:ui:v1';
+	function read_ui(): { fade_past?: boolean } {
+		try {
+			return JSON.parse(storage?.getItem(UI_KEY) ?? '{}') ?? {};
+		} catch {
+			return {};
+		}
+	}
+	let fade_past = $state(read_ui().fade_past ?? true);
+	function toggle_fade_past() {
+		fade_past = !fade_past;
+		try {
+			storage?.setItem(UI_KEY, JSON.stringify({ ...read_ui(), fade_past }));
+		} catch {
+			// A per-device preference; fine to lose.
+		}
+		show_message(fade_past ? 'Past days are muted' : 'Past days look like the rest');
+	}
+
+	function keys_between(start: string, end: string) {
+		const keys = [start];
+		while (keys.at(-1)! < end) keys.push(add_days(keys.at(-1)!, 1));
+		return keys;
+	}
+
+	const MAX_QUICK_ADD_DAYS = 366;
+
+	/** "Dentist fri #health" in the palette becomes an "Add …" result. */
+	function suggest_quick_add(query: string): Suggestion | null {
+		const parsed = parse_quick_add(query, today, planner.settings);
+		if (!parsed) return null;
+
+		const keys = keys_between(parsed.start, parsed.end);
+		if (keys.length > MAX_QUICK_ADD_DAYS) return null;
+		const entry = normalize_entry({ title: parsed.title, description: '', color: parsed.color });
+		if (!entry) return null;
+
+		const replaced = keys.filter(
+			(key) => planner.entries[key] && !same_entry(planner.entries[key], entry)
+		);
+		const what = entry.title || color_label(planner.settings, entry.color!);
+		// Quick add looks ahead, so the year is named when the dates land in another one.
+		const end_year = parse_date_key(parsed.end).year;
+		const when =
+			keys.length === 1
+				? format_key(parsed.start)
+				: `${format_key(parsed.start, short_date)} – ${format_key(parsed.end, short_date)}${end_year !== year ? `, ${end_year}` : ''} · ${plural_days(keys.length)}`;
+		const category = entry.color ? ` · ${color_label(planner.settings, entry.color)}` : '';
+
+		return {
+			label: `Add “${what}” · ${when}${category}`,
+			detail: replaced.length ? `replaces ${plural_days(replaced.length)}` : undefined,
+			hue: entry.color ? TAG_HUES[entry.color] : undefined,
+			run: () => {
+				planner.set_many(keys.map((key) => [key, entry]));
+				go_to(parsed.start, parsed.start);
+				show_message(`Added “${what}” · ${MOD}+Z to undo`);
+			}
+		};
+	}
+
+	function describe_blocker(key: string) {
+		const entry = planner.entries[key];
+		return `“${entry?.title || 'something'}” is on ${format_key(key, short_date)}`;
+	}
+
+	/** Shifts the event under the cursor (or the selection) by `days`, refusing to overwrite. */
+	function move_targets(days: number) {
+		const source = targets;
+		if (!source.some((key) => planner.entries[key])) {
+			show_message('Nothing to move here');
+			return;
+		}
+		const destination = source.map((key) => add_days(key, days));
+		const first_year = parse_date_key(destination[0]).year;
+		const last_year = parse_date_key(destination.at(-1)!).year;
+		if (first_year < MIN_YEAR || last_year > MAX_YEAR) return;
+
+		const blocker = destination.find((key) => !source.includes(key) && planner.entries[key]);
+		if (blocker) {
+			show_message(`Can’t move: ${describe_blocker(blocker)}`);
+			return;
+		}
+
+		const moved = new Set(destination);
+		const changes: [string, Entry | null][] = [
+			...source.filter((key) => !moved.has(key)).map((key): [string, null] => [key, null]),
+			...source.map((key, i): [string, Entry | null] => [
+				destination[i],
+				planner.entries[key] ?? null
+			])
+		];
+		planner.set_many(changes);
+		go_to(add_days(active, days), add_days(anchor, days));
+		show_message(`Moved to ${span_label(destination)}`);
+	}
+
+	/** Lengthens or shortens the event under the cursor (or the selection) at its end. */
+	function resize_targets(days: number) {
+		const block = targets;
+		const end = block.at(-1)!;
+		const entry = planner.entries[end];
+		if (!entry) {
+			show_message('Nothing to stretch here');
+			return;
+		}
+
+		if (days > 0) {
+			const added = keys_between(add_days(end, 1), add_days(end, days));
+			const blocker = added.find(
+				(key) => planner.entries[key] && !same_entry(planner.entries[key], entry)
+			);
+			if (blocker) {
+				show_message(`Can’t extend: ${describe_blocker(blocker)}`);
+				return;
+			}
+			planner.set_many(added.map((key) => [key, entry]));
+		} else {
+			if (block.length <= -days) {
+				show_message('An event needs at least one day');
+				return;
+			}
+			planner.set_many(block.slice(days).map((key) => [key, null]));
+		}
+
+		const new_end = add_days(end, days);
+		go_to(new_end, anchor === active ? new_end : block[0]);
+		show_message(`Now ${span_label(keys_between(block[0], new_end))}`);
+	}
+
+	const relative = new Intl.RelativeTimeFormat(undefined, { numeric: 'auto' });
+
+	/** What's happening now or next, for the toolbar. */
+	const next_up = $derived.by(() => {
+		const run = list_runs(planner.entries).find((run) => run.end >= today && run.entry.title);
+		if (!run) return null;
+		const days_until = (key: string) =>
+			Math.round(
+				(to_date(parse_date_key(key)).getTime() - to_date(parse_date_key(today)).getTime()) /
+					86_400_000
+			);
+		const ongoing = run.start <= today;
+		return {
+			key: run.start,
+			title: run.entry.title,
+			hue: run.entry.color ? TAG_HUES[run.entry.color] : undefined,
+			when: ongoing
+				? run.end === today
+					? 'last day'
+					: `${days_until(run.end) + 1} days left`
+				: relative.format(days_until(run.start), 'day'),
+			ongoing
+		};
+	});
+
 	function toggle_highlight(color: TagColor | undefined) {
 		highlight = color;
 		if (color) {
@@ -254,6 +417,8 @@
 		clear,
 		set_color,
 		highlight: toggle_highlight,
+		move: move_targets,
+		resize: resize_targets,
 		details: edit_details,
 		go_to: (key) => go_to(key),
 		message: show_message
@@ -297,6 +462,12 @@
 			label: 'Public holidays…',
 			keywords: 'country region red days',
 			run: () => holidays_dialog?.show()
+		},
+		{
+			id: 'fade-past',
+			label: 'Mute past days (on/off)',
+			keywords: 'fade dim history',
+			run: toggle_fade_past
 		},
 		{
 			id: 'categories',
@@ -467,6 +638,21 @@
 		</ul>
 	{/if}
 
+	{#if next_up}
+		<button
+			type="button"
+			class="next-up"
+			style={next_up.hue === undefined ? undefined : `--hue: ${next_up.hue}`}
+			onclick={() => go_to(next_up.key)}
+			title="Go to {next_up.title}"
+		>
+			<span class="swatch" aria-hidden="true"></span>
+			<span class="label">{next_up.ongoing ? 'Now' : 'Next'}:</span>
+			<strong>{next_up.title}</strong>
+			<span class="when">· {next_up.when}</span>
+		</button>
+	{/if}
+
 	<span class="spacer"></span>
 
 	{#if sync.status !== 'unavailable'}
@@ -573,6 +759,7 @@
 		{actions}
 		{highlight}
 		{holidays}
+		{fade_past}
 	/>
 </main>
 
@@ -633,6 +820,7 @@
 	entries={planner.entries}
 	{year}
 	{holidays}
+	suggest={suggest_quick_add}
 	ongo={(key) => go_to(key)}
 	onclose={focus_grid}
 />
@@ -721,6 +909,34 @@
 			height: 0.7rem;
 			border-radius: 3px;
 			background-color: oklch(var(--tag-bar-l) var(--tag-bar-c) var(--hue));
+		}
+	}
+
+	.next-up {
+		max-width: 22rem;
+		overflow: hidden;
+		white-space: nowrap;
+
+		& .swatch {
+			flex-shrink: 0;
+			width: 0.7rem;
+			height: 0.7rem;
+			border-radius: 3px;
+			background-color: var(--text-faint);
+		}
+
+		&[style] .swatch {
+			background-color: oklch(var(--tag-bar-l) var(--tag-bar-c) var(--hue));
+		}
+
+		& strong {
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+
+		& .label,
+		& .when {
+			color: var(--text-muted);
 		}
 	}
 
@@ -868,6 +1084,8 @@
 
 		.spacer,
 		.legend,
+		.next-up .label,
+		.next-up .when,
 		.search kbd,
 		.sync .label,
 		.hints {
