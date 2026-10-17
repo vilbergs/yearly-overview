@@ -1,0 +1,65 @@
+@layer colors {
+	:root {
+		--gray-50: oklch(0.97 0.005 105);
+		--gray-100: oklch(0.9 0.005 105);
+		--gray-200: oklch(0.8 0.01 103);
+		--gray-300: oklch(0.75 0.01 103);
+		--gray-400: oklch(0.7 0.01 103);
+		--gray-500: oklch(0.6 0.01 103);
+		--gray-600: oklch(0.5 0.01 103);
+		--gray-700: oklch(0.4 0.01 103);
+		--gray-800: oklch(0.3 0.01 103);
+		--gray-900: oklch(0.2 0.01 103);
+
+		/* Semantic tokens. Components use these so dark mode only needs to swap them. */
+		color-scheme: light dark;
+		--bg: oklch(1 0 0);
+		--surface: oklch(1 0 0);
+		--surface-muted: oklch(0.97 0.004 250);
+		--surface-raised: oklch(1 0 0);
+		--border: oklch(0.92 0.005 250);
+		--border-strong: oklch(0.8 0.01 250);
+		--text: oklch(0.22 0.01 250);
+		--text-muted: oklch(0.42 0.01 250);
+		--text-faint: oklch(0.5 0.01 250);
+		--accent: oklch(0.5 0.18 255);
+		--accent-contrast: oklch(1 0 0);
+		--selection: oklch(0.6 0.16 255 / 0.16);
+		--danger: oklch(0.52 0.19 25);
+		--warning: oklch(0.5 0.14 60);
+
+		/* Hue-driven fills: month headers and color tags set --hue. */
+		--header-l: 0.9;
+		--header-c: 0.06;
+		--tag-l: 0.91;
+		--tag-c: 0.07;
+		--tag-bar-l: 0.62;
+		--tag-bar-c: 0.17;
+	}
+
+	@media (prefers-color-scheme: dark) {
+		:root {
+			--bg: oklch(0.17 0.008 250);
+			--surface: oklch(0.2 0.008 250);
+			--surface-muted: oklch(0.18 0.008 250);
+			--surface-raised: oklch(0.25 0.01 250);
+			--border: oklch(0.28 0.01 250);
+			--border-strong: oklch(0.38 0.01 250);
+			--text: oklch(0.93 0.005 250);
+			--text-muted: oklch(0.78 0.01 250);
+			--text-faint: oklch(0.74 0.01 250);
+			--accent: oklch(0.68 0.15 255);
+			--accent-contrast: oklch(0.15 0.01 250);
+			--selection: oklch(0.68 0.15 255 / 0.22);
+			--danger: oklch(0.7 0.17 25);
+			--warning: oklch(0.78 0.13 70);
+
+			--header-l: 0.32;
+			--header-c: 0.05;
+			--tag-l: 0.3;
+			--tag-c: 0.06;
+			--tag-bar-l: 0.72;
+			--tag-bar-c: 0.15;
+		}
+	}
+}

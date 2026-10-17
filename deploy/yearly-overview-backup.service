@@ -1,0 +1,28 @@
+[Unit]
+Description=Back up the Yearly Overview database
+Documentation=https://github.com/vilbergs/yearly-overview
+After=postgresql.service
+
+[Service]
+Type=oneshot
+EnvironmentFile=/etc/yearly-overview.env
+ExecStart=/opt/yearly-overview/backup.sh
+
+# Dumps go to /var/lib/yearly-overview/backups, writable only by this job.
+DynamicUser=yes
+StateDirectory=yearly-overview
+StateDirectoryMode=0700
+UMask=0077
+
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictNamespaces=yes
+LockPersonality=yes
+CapabilityBoundingSet=

@@ -1,0 +1,30 @@
+# Run the planner with its own PostgreSQL:  docker compose up -d
+# Then open http://localhost:8080. There is no login: keep it on a private network.
+services:
+  app:
+    build: .
+    ports:
+      - '127.0.0.1:8080:8080'
+    environment:
+      DATABASE_URL: postgres://yearly_overview:yearly_overview@db/yearly_overview
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: yearly_overview
+      POSTGRES_PASSWORD: yearly_overview
+      POSTGRES_DB: yearly_overview
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U yearly_overview']
+      interval: 5s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  db-data:

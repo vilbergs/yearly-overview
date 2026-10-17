@@ -1,0 +1,941 @@
+{
+	"openapi": "3.1.0",
+	"info": {
+		"title": "Yearly Overview",
+		"version": "1.0.0",
+		"description": "A personal year planner. Each day holds at most one entry: a title, an optional description and an optional color. The six colors can be named as categories (e.g. red = \"Work\"); wherever a color is accepted you can pass the category name instead. Consecutive days with identical entries form an **event** (a trip, a holiday).\n\nTypical flow: `GET /today` for context, `GET /events` to look things up, `POST /events` to plan something (it refuses to overwrite other plans unless `overwrite: true`), `PATCH /days/{date}` to adjust one day, `DELETE /days?from=&to=` to clear.\n\nThere is no authentication: the server is meant to be reachable only by its owner, e.g. on a private tailnet. Changes appear in open browsers within seconds. Dates are YYYY-MM-DD in the server's time zone. Every error is JSON: `{\"error\": \"...\"}`. The same operations are available as MCP tools at `/mcp`."
+	},
+	"servers": [
+		{
+			"url": "/api/v1"
+		}
+	],
+	"paths": {
+		"/today": {
+			"get": {
+				"operationId": "getToday",
+				"summary": "Today's date, week, entry and upcoming events",
+				"description": "The best first call: gives the current date (server time zone), ISO week, what's planned today and the next events within 60 days.",
+				"parameters": [
+					{
+						"name": "date",
+						"in": "query",
+						"schema": {
+							"type": "string",
+							"format": "date",
+							"pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+							"example": "2026-07-06"
+						},
+						"description": "Pretend today is this date."
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Today"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid input; `error` says what to fix.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/summary": {
+			"get": {
+				"operationId": "getSummary",
+				"summary": "A whole year at a glance",
+				"description": "Every event of a year grouped by the month it starts in, with counts per category.",
+				"parameters": [
+					{
+						"name": "year",
+						"in": "query",
+						"schema": {
+							"type": "integer",
+							"minimum": 1900,
+							"maximum": 9999
+						},
+						"description": "Defaults to the current year."
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Summary"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid input; `error` says what to fix.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/events": {
+			"get": {
+				"operationId": "listEvents",
+				"summary": "List events (consecutive identical days merged)",
+				"description": "Preferred over `/days` for reading: a 10-day trip is one item. An event crossing the range edge is clipped to the range.",
+				"parameters": [
+					{
+						"name": "from",
+						"in": "query",
+						"schema": {
+							"type": "string",
+							"format": "date",
+							"pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+							"example": "2026-07-06"
+						},
+						"description": "First day to include."
+					},
+					{
+						"name": "to",
+						"in": "query",
+						"schema": {
+							"type": "string",
+							"format": "date",
+							"pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+							"example": "2026-07-06"
+						},
+						"description": "Last day to include."
+					},
+					{
+						"name": "query",
+						"in": "query",
+						"schema": {
+							"type": "string"
+						},
+						"description": "Case-insensitive text to find in titles, descriptions and category names. `q` also works."
+					},
+					{
+						"name": "category",
+						"in": "query",
+						"schema": {
+							"type": "string"
+						},
+						"description": "Only days with this category name (e.g. `Work`) or color (e.g. `red`)."
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"events": {
+											"type": "array",
+											"items": {
+												"$ref": "#/components/schemas/Event"
+											}
+										}
+									},
+									"required": ["events"]
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid input; `error` says what to fix.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			},
+			"post": {
+				"operationId": "addEvent",
+				"summary": "Plan something on one or more days",
+				"description": "Writes the same entry on every day from `start` to `end`. If any of those days already holds something different, nothing is written and 409 lists the conflicts, unless `overwrite` is true.",
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/EventInput"
+							}
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": "Created",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/AddedEvent"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid input; `error` says what to fix.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"409": {
+						"description": "Some days already have other plans; `details.conflicts` lists them.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/days": {
+			"get": {
+				"operationId": "listDays",
+				"summary": "List individual days with entries",
+				"parameters": [
+					{
+						"name": "from",
+						"in": "query",
+						"schema": {
+							"type": "string",
+							"format": "date",
+							"pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+							"example": "2026-07-06"
+						},
+						"description": "First day to include."
+					},
+					{
+						"name": "to",
+						"in": "query",
+						"schema": {
+							"type": "string",
+							"format": "date",
+							"pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+							"example": "2026-07-06"
+						},
+						"description": "Last day to include."
+					},
+					{
+						"name": "query",
+						"in": "query",
+						"schema": {
+							"type": "string"
+						},
+						"description": "Case-insensitive text to find in titles, descriptions and category names. `q` also works."
+					},
+					{
+						"name": "category",
+						"in": "query",
+						"schema": {
+							"type": "string"
+						},
+						"description": "Only days with this category name (e.g. `Work`) or color (e.g. `red`)."
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"days": {
+											"type": "array",
+											"items": {
+												"$ref": "#/components/schemas/Day"
+											}
+										}
+									},
+									"required": ["days"]
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid input; `error` says what to fix.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			},
+			"delete": {
+				"operationId": "clearDays",
+				"summary": "Clear every day in a range",
+				"parameters": [
+					{
+						"name": "from",
+						"in": "query",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"format": "date",
+							"pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+							"example": "2026-07-06"
+						}
+					},
+					{
+						"name": "to",
+						"in": "query",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"format": "date",
+							"pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+							"example": "2026-07-06"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"cleared": {
+											"type": "integer",
+											"description": "Days that had something on them."
+										}
+									},
+									"required": ["cleared"]
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid input; `error` says what to fix.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/days/{date}": {
+			"parameters": [
+				{
+					"name": "date",
+					"in": "path",
+					"required": true,
+					"schema": {
+						"type": "string",
+						"format": "date",
+						"pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+						"example": "2026-07-06"
+					}
+				}
+			],
+			"get": {
+				"operationId": "getDay",
+				"summary": "One day",
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"date": {
+											"type": "string",
+											"format": "date",
+											"pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+											"example": "2026-07-06"
+										},
+										"day": {
+											"oneOf": [
+												{
+													"$ref": "#/components/schemas/Day"
+												},
+												{
+													"type": "null"
+												}
+											]
+										}
+									},
+									"required": ["date", "day"]
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid input; `error` says what to fix.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			},
+			"put": {
+				"operationId": "setDay",
+				"summary": "Replace a day's entry",
+				"description": "Fields left out become empty. An entry with no title, description or color deletes the day (`day` is then null).",
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/DayInput"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"day": {
+											"oneOf": [
+												{
+													"$ref": "#/components/schemas/Day"
+												},
+												{
+													"type": "null"
+												}
+											]
+										}
+									},
+									"required": ["day"]
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid input; `error` says what to fix.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			},
+			"patch": {
+				"operationId": "updateDay",
+				"summary": "Change some fields of a day",
+				"description": "Only the given fields change. Pass `\"\"` as color or category to remove the color.",
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/DayInput"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"day": {
+											"oneOf": [
+												{
+													"$ref": "#/components/schemas/Day"
+												},
+												{
+													"type": "null"
+												}
+											]
+										}
+									},
+									"required": ["day"]
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid input; `error` says what to fix.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			},
+			"delete": {
+				"operationId": "deleteDay",
+				"summary": "Clear one day",
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"deleted": {
+											"type": "boolean",
+											"description": "False when the day was already empty."
+										}
+									},
+									"required": ["deleted"]
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid input; `error` says what to fix.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/categories": {
+			"get": {
+				"operationId": "listCategories",
+				"summary": "The six colors, their names and how many days use them",
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"categories": {
+											"type": "array",
+											"items": {
+												"$ref": "#/components/schemas/Category"
+											}
+										}
+									},
+									"required": ["categories"]
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/settings": {
+			"get": {
+				"operationId": "getSettings",
+				"summary": "Category names and public holiday country",
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Settings"
+								}
+							}
+						}
+					}
+				}
+			},
+			"patch": {
+				"operationId": "updateSettings",
+				"summary": "Change category names or the holiday country",
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/SettingsInput"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Settings"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid input; `error` says what to fix.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/openapi.json": {
+			"get": {
+				"operationId": "getOpenApi",
+				"summary": "This document",
+				"responses": {
+					"200": {
+						"description": "OpenAPI 3.1 document"
+					}
+				}
+			}
+		}
+	},
+	"components": {
+		"schemas": {
+			"Day": {
+				"type": "object",
+				"required": ["date", "title", "description"],
+				"properties": {
+					"date": {
+						"type": "string",
+						"format": "date",
+						"pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+						"example": "2026-07-06"
+					},
+					"title": {
+						"type": "string",
+						"maxLength": 200
+					},
+					"description": {
+						"type": "string",
+						"maxLength": 5000
+					},
+					"color": {
+						"type": "string",
+						"enum": ["red", "orange", "yellow", "green", "blue", "purple"]
+					},
+					"category": {
+						"type": "string",
+						"description": "The color's category name, if it has one."
+					}
+				}
+			},
+			"Event": {
+				"type": "object",
+				"required": ["start", "end", "days", "title", "description"],
+				"properties": {
+					"start": {
+						"type": "string",
+						"format": "date",
+						"pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+						"example": "2026-07-06"
+					},
+					"end": {
+						"type": "string",
+						"format": "date",
+						"pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+						"example": "2026-07-06"
+					},
+					"days": {
+						"type": "integer",
+						"minimum": 1
+					},
+					"title": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"color": {
+						"type": "string",
+						"enum": ["red", "orange", "yellow", "green", "blue", "purple"]
+					},
+					"category": {
+						"type": "string"
+					}
+				}
+			},
+			"DayInput": {
+				"type": "object",
+				"additionalProperties": false,
+				"properties": {
+					"title": {
+						"type": "string",
+						"maxLength": 200
+					},
+					"description": {
+						"type": "string",
+						"maxLength": 5000
+					},
+					"color": {
+						"type": "string",
+						"description": "red, orange, yellow, green, blue or purple; \"\" removes the color."
+					},
+					"category": {
+						"type": "string",
+						"description": "A category name (e.g. \"Work\") or color, instead of `color`."
+					}
+				}
+			},
+			"EventInput": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["start", "title"],
+				"properties": {
+					"start": {
+						"type": "string",
+						"format": "date",
+						"pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+						"example": "2026-07-06"
+					},
+					"end": {
+						"type": "string",
+						"format": "date",
+						"pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+						"example": "2026-07-06",
+						"description": "Last day, inclusive. Defaults to `start`."
+					},
+					"title": {
+						"type": "string",
+						"maxLength": 200
+					},
+					"description": {
+						"type": "string",
+						"maxLength": 5000
+					},
+					"color": {
+						"type": "string",
+						"description": "A color, or use `category`."
+					},
+					"category": {
+						"type": "string",
+						"description": "A category name or color."
+					},
+					"overwrite": {
+						"type": "boolean",
+						"default": false,
+						"description": "Replace days that already have other plans."
+					}
+				}
+			},
+			"AddedEvent": {
+				"type": "object",
+				"required": ["event", "replaced"],
+				"properties": {
+					"event": {
+						"$ref": "#/components/schemas/Event"
+					},
+					"replaced": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Day"
+						},
+						"description": "What was on the days that were overwritten."
+					}
+				}
+			},
+			"Category": {
+				"type": "object",
+				"required": ["color", "days"],
+				"properties": {
+					"color": {
+						"type": "string",
+						"enum": ["red", "orange", "yellow", "green", "blue", "purple"]
+					},
+					"name": {
+						"type": "string"
+					},
+					"days": {
+						"type": "integer"
+					}
+				}
+			},
+			"Settings": {
+				"type": "object",
+				"required": ["categories"],
+				"properties": {
+					"categories": {
+						"type": "object",
+						"additionalProperties": {
+							"type": "string"
+						},
+						"description": "Names by color, e.g. {\"red\": \"Work\"}.",
+						"example": {
+							"red": "Work",
+							"green": "Holiday"
+						}
+					},
+					"holiday_country": {
+						"type": "string",
+						"description": "ISO 3166 country (and region) whose public holidays the app shows, e.g. SE or DE-BY."
+					}
+				}
+			},
+			"SettingsInput": {
+				"type": "object",
+				"additionalProperties": false,
+				"properties": {
+					"categories": {
+						"type": "object",
+						"additionalProperties": {
+							"type": "string",
+							"maxLength": 40
+						},
+						"description": "Replaces all names; \"\" removes one."
+					},
+					"holiday_country": {
+						"type": ["string", "null"],
+						"description": "SE, DE-BY, ...; null or \"\" turns holidays off."
+					}
+				}
+			},
+			"Today": {
+				"type": "object",
+				"required": ["date", "weekday", "iso_week", "day_of_year", "days_left_in_year", "upcoming"],
+				"properties": {
+					"date": {
+						"type": "string",
+						"format": "date",
+						"pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+						"example": "2026-07-06"
+					},
+					"weekday": {
+						"type": "string"
+					},
+					"iso_week": {
+						"type": "integer"
+					},
+					"day_of_year": {
+						"type": "integer"
+					},
+					"days_left_in_year": {
+						"type": "integer"
+					},
+					"today": {
+						"oneOf": [
+							{
+								"$ref": "#/components/schemas/Day"
+							},
+							{
+								"type": "null"
+							}
+						]
+					},
+					"upcoming": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Event"
+						},
+						"description": "Events still running or starting in the next 60 days, soonest first (max 10)."
+					}
+				}
+			},
+			"Summary": {
+				"type": "object",
+				"required": ["year", "planned_days", "events", "by_category", "months"],
+				"properties": {
+					"year": {
+						"type": "integer"
+					},
+					"planned_days": {
+						"type": "integer"
+					},
+					"events": {
+						"type": "integer"
+					},
+					"by_category": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Category"
+						}
+					},
+					"months": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"month": {
+									"type": "integer"
+								},
+								"name": {
+									"type": "string"
+								},
+								"planned_days": {
+									"type": "integer"
+								},
+								"events": {
+									"type": "array",
+									"items": {
+										"$ref": "#/components/schemas/Event"
+									}
+								}
+							}
+						}
+					}
+				}
+			},
+			"Error": {
+				"type": "object",
+				"required": ["error"],
+				"properties": {
+					"error": {
+						"type": "string"
+					},
+					"details": {
+						"type": "object",
+						"description": "Extra information, e.g. `conflicts` for 409."
+					}
+				}
+			}
+		}
+	}
+}

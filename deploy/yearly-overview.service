@@ -1,0 +1,41 @@
+[Unit]
+Description=Yearly Overview planner
+Documentation=https://github.com/vilbergs/yearly-overview
+After=network-online.target postgresql.service
+Wants=network-online.target postgresql.service
+
+[Service]
+Type=simple
+EnvironmentFile=/etc/yearly-overview.env
+ExecStart=/opt/yearly-overview/yearly-overview-server
+WorkingDirectory=/opt/yearly-overview
+Restart=on-failure
+RestartSec=5
+
+# Runs as a throwaway system user with a read-only view of the system; the data lives in
+# PostgreSQL.
+DynamicUser=yes
+UMask=0077
+
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+SystemCallArchitectures=native
+CapabilityBoundingSet=
+
+[Install]
+WantedBy=multi-user.target
