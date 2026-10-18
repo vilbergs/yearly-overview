@@ -27,7 +27,7 @@ colors and deletes apply to the whole block under the cursor; select part of it 
 Paste works with lists from other apps too: each line of a copied spreadsheet column lands on
 the next day.
 
-Name the six colors ("Work", "Holiday", …) with **Name categories…** in the menu or palette;
+Name the seven colors ("Work", "Holiday", …) with **Name categories…** in the menu or palette;
 named categories appear as a legend whose buttons highlight one category across the year.
 
 **Hide months** you don't need right now with the **‹** in a month's header, or _Hide past

@@ -15,7 +15,7 @@ use crate::{
 pub const MAX_CHANGES_PER_REQUEST: usize = 5000;
 pub(crate) const MAX_TITLE_LENGTH: usize = 200;
 pub(crate) const MAX_DESCRIPTION_LENGTH: usize = 5000;
-pub(crate) const COLORS: [&str; 6] = ["red", "orange", "yellow", "green", "blue", "purple"];
+pub(crate) const COLORS: [&str; 7] = ["red", "orange", "yellow", "green", "blue", "purple", "pink"];
 pub(crate) const MAX_CATEGORY_LENGTH: usize = 40;
 
 /// Account-wide settings. Unknown fields are rejected so typos don't silently disappear.
@@ -303,7 +303,7 @@ mod tests {
             normalize_settings(settings(&[("green", " Holiday "), ("red", "  ")])).unwrap(),
             settings(&[("green", "Holiday")])
         );
-        assert!(normalize_settings(settings(&[("pink", "Nope")])).is_err());
+        assert!(normalize_settings(settings(&[("teal", "Nope")])).is_err());
         assert!(normalize_settings(settings(&[("red", &"x".repeat(41))])).is_err());
 
         let country = |code: &str| Settings {

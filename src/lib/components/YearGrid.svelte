@@ -249,7 +249,7 @@
 		} else if (event.key === 'Delete' || event.key === 'Backspace') {
 			event.preventDefault();
 			actions.clear();
-		} else if (event.altKey && !mod && /^Digit[0-6]$/.test(event.code)) {
+		} else if (event.altKey && !mod && /^Digit[0-7]$/.test(event.code)) {
 			// Matched on `code` because Alt changes the produced character on macOS.
 			event.preventDefault();
 			const digit = Number(event.code.slice(-1));

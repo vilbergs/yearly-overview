@@ -6,7 +6,7 @@ description: Read and change the user's Yearly Overview planner (their personal 
 # Yearly Overview planner
 
 The planner holds **one entry per day**: a title, an optional description and an optional
-color. The six colors (red, orange, yellow, green, blue, purple) can be named as **categories**
+color. The seven colors (red, orange, yellow, green, blue, purple, pink) can be named as **categories**
 (e.g. red = "Work", green = "Holiday"); wherever a color is accepted, a category name works too.
 **Consecutive days with identical entries form an event** (a trip, a conference week).
 

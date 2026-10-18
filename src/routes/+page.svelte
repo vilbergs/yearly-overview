@@ -735,7 +735,7 @@
 			</span>
 		{:else if anchor !== active}
 			<span class="hints">
-				Type to fill · <kbd>{ALT} 1–6</kbd> color · <kbd>Del</kbd> clear · <kbd>Esc</kbd> deselect
+				Type to fill · <kbd>{ALT} 1–7</kbd> color · <kbd>Del</kbd> clear · <kbd>Esc</kbd> deselect
 			</span>
 		{:else}
 			<span class="hints">

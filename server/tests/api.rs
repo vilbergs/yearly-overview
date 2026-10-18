@@ -176,7 +176,7 @@ async fn settings_sync_with_revisions(pool: PgPool) {
     assert!(app.pull(1).await.body.get("settings").is_none());
 
     let invalid = app
-        .push(json!({ "settings": { "categories": { "pink": "x" } } }))
+        .push(json!({ "settings": { "categories": { "teal": "x" } } }))
         .await;
     assert_eq!(invalid.status, StatusCode::BAD_REQUEST);
 }

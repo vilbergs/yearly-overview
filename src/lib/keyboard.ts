@@ -58,9 +58,9 @@ export const SHORTCUTS: ShortcutGroup[] = [
 			{ keys: [['Shift', 'Enter']], label: 'Edit details (description, color)' },
 			{ keys: [['Enter'], ['Tab']], label: 'While editing: save and move down / right' },
 			{ keys: [['Esc']], label: 'While editing: cancel' },
-			{ keys: [[ALT, '1–6']], label: 'Set color' },
+			{ keys: [[ALT, '1–7']], label: 'Set color' },
 			{ keys: [[ALT, '0']], label: 'Remove color' },
-			{ keys: [[ALT, 'Shift', '1–6']], label: 'Highlight a category (Esc clears)' },
+			{ keys: [[ALT, 'Shift', '1–7']], label: 'Highlight a category (Esc clears)' },
 			{ keys: [['Delete'], ['Backspace']], label: 'Clear' },
 			{
 				keys: [

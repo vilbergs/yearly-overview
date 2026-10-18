@@ -48,8 +48,8 @@
 	>
 		<h2 id="categories-heading">Categories</h2>
 		<p class="hint">
-			Name the colors so the year reads at a glance. Press <kbd>{ALT} 1–6</kbd> in the calendar to
-			tag days, <kbd>{ALT} Shift 1–6</kbd> to highlight one category.
+			Name the colors so the year reads at a glance. Press <kbd>{ALT} 1–7</kbd> in the calendar to
+			tag days, <kbd>{ALT} Shift 1–7</kbd> to highlight one category.
 		</p>
 
 		<div class="rows">

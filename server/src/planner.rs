@@ -332,7 +332,7 @@ pub fn resolve_category(settings: &Settings, category: &str) -> AppResult<String
 pub struct DayInput {
     pub title: Option<String>,
     pub description: Option<String>,
-    /// One of red, orange, yellow, green, blue, purple. `""` removes the color.
+    /// One of red, orange, yellow, green, blue, purple, pink. `""` removes the color.
     pub color: Option<String>,
     /// A category name; alternative to `color`. `""` removes the color.
     pub category: Option<String>,

@@ -101,7 +101,7 @@
 			</label>
 
 			<fieldset>
-				<legend>Color <small>{ALT}+1–6 in the calendar</small></legend>
+				<legend>Color <small>{ALT}+1–7 in the calendar</small></legend>
 				<div class="swatches">
 					<label class="swatch none">
 						<input type="radio" name="color" value="" bind:group={form.color} />

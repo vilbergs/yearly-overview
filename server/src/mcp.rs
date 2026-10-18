@@ -25,7 +25,7 @@ const PROTOCOL_VERSIONS: [&str; 4] = ["2025-11-25", "2025-06-18", "2025-03-26", 
 
 const INSTRUCTIONS: &str = "\
 Yearly Overview is the user's personal year planner. Each day holds at most one entry (title, \
-optional description, optional color). The six colors (red, orange, yellow, green, blue, purple) \
+optional description, optional color). The seven colors (red, orange, yellow, green, blue, purple, pink) \
 can be named as categories, e.g. red = \"Work\"; tools accept either the name or the color. \
 Consecutive days with the same entry form an event, such as a trip.
 
@@ -36,7 +36,7 @@ Dates are YYYY-MM-DD. Changes appear in the user's open planner within seconds."
 
 fn tools() -> Value {
     let date = json!({ "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$", "description": "YYYY-MM-DD" });
-    let category = json!({ "type": "string", "description": "A category name (e.g. \"Work\") or a color: red, orange, yellow, green, blue, purple. \"\" removes the color." });
+    let category = json!({ "type": "string", "description": "A category name (e.g. \"Work\") or a color: red, orange, yellow, green, blue, purple, pink. \"\" removes the color." });
     let filters = json!({
         "from": { "type": "string", "description": "First day to include, YYYY-MM-DD." },
         "to": { "type": "string", "description": "Last day to include, YYYY-MM-DD." },
@@ -88,7 +88,7 @@ fn tools() -> Value {
         {
             "name": "list_categories",
             "title": "Categories",
-            "description": "The six colors, their category names (if named) and how many days use each.",
+            "description": "The seven colors, their category names (if named) and how many days use each.",
             "inputSchema": { "type": "object", "properties": {} },
             "annotations": read
         },

@@ -3,7 +3,7 @@
 	"info": {
 		"title": "Yearly Overview",
 		"version": "1.0.0",
-		"description": "A personal year planner. Each day holds at most one entry: a title, an optional description and an optional color. The six colors can be named as categories (e.g. red = \"Work\"); wherever a color is accepted you can pass the category name instead. Consecutive days with identical entries form an **event** (a trip, a holiday).\n\nTypical flow: `GET /today` for context, `GET /events` to look things up, `POST /events` to plan something (it refuses to overwrite other plans unless `overwrite: true`), `PATCH /days/{date}` to adjust one day, `DELETE /days?from=&to=` to clear.\n\nThere is no authentication: the server is meant to be reachable only by its owner, e.g. on a private tailnet. Changes appear in open browsers within seconds. Dates are YYYY-MM-DD in the server's time zone. Every error is JSON: `{\"error\": \"...\"}`. The same operations are available as MCP tools at `/mcp`."
+		"description": "A personal year planner. Each day holds at most one entry: a title, an optional description and an optional color. The seven colors can be named as categories (e.g. red = \"Work\"); wherever a color is accepted you can pass the category name instead. Consecutive days with identical entries form an **event** (a trip, a holiday).\n\nTypical flow: `GET /today` for context, `GET /events` to look things up, `POST /events` to plan something (it refuses to overwrite other plans unless `overwrite: true`), `PATCH /days/{date}` to adjust one day, `DELETE /days?from=&to=` to clear.\n\nThere is no authentication: the server is meant to be reachable only by its owner, e.g. on a private tailnet. Changes appear in open browsers within seconds. Dates are YYYY-MM-DD in the server's time zone. Every error is JSON: `{\"error\": \"...\"}`. The same operations are available as MCP tools at `/mcp`."
 	},
 	"servers": [
 		{
@@ -549,7 +549,7 @@
 		"/categories": {
 			"get": {
 				"operationId": "listCategories",
-				"summary": "The six colors, their names and how many days use them",
+				"summary": "The seven colors, their names and how many days use them",
 				"responses": {
 					"200": {
 						"description": "OK",
@@ -661,7 +661,7 @@
 					},
 					"color": {
 						"type": "string",
-						"enum": ["red", "orange", "yellow", "green", "blue", "purple"]
+						"enum": ["red", "orange", "yellow", "green", "blue", "purple", "pink"]
 					},
 					"category": {
 						"type": "string",
@@ -697,7 +697,7 @@
 					},
 					"color": {
 						"type": "string",
-						"enum": ["red", "orange", "yellow", "green", "blue", "purple"]
+						"enum": ["red", "orange", "yellow", "green", "blue", "purple", "pink"]
 					},
 					"category": {
 						"type": "string"
@@ -718,7 +718,7 @@
 					},
 					"color": {
 						"type": "string",
-						"description": "red, orange, yellow, green, blue or purple; \"\" removes the color."
+						"description": "red, orange, yellow, green, blue, purple or pink; \"\" removes the color."
 					},
 					"category": {
 						"type": "string",
@@ -789,7 +789,7 @@
 				"properties": {
 					"color": {
 						"type": "string",
-						"enum": ["red", "orange", "yellow", "green", "blue", "purple"]
+						"enum": ["red", "orange", "yellow", "green", "blue", "purple", "pink"]
 					},
 					"name": {
 						"type": "string"

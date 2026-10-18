@@ -1,4 +1,4 @@
-export const TAG_COLORS = ['red', 'orange', 'yellow', 'green', 'blue', 'purple'] as const;
+export const TAG_COLORS = ['red', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink'] as const;
 export type TagColor = (typeof TAG_COLORS)[number];
 
 export type Entry = {
@@ -146,5 +146,6 @@ export const TAG_HUES: Record<TagColor, number> = {
 	yellow: 95,
 	green: 150,
 	blue: 250,
-	purple: 305
+	purple: 305,
+	pink: 350
 };
