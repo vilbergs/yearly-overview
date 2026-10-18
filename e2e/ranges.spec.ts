@@ -24,6 +24,13 @@ test.describe('ranges and multi-day blocks', () => {
 		await planner.expect_focus('2026-07-11');
 	});
 
+	test('a block starting on a Monday keeps the week number', async ({ planner }) => {
+		await planner.press('Shift+ArrowDown');
+		await planner.type_title('Conference in Gothenburg with the whole team');
+		await expect(planner.cell('2026-07-06').locator('.title')).toContainText('Conference');
+		await expect(planner.cell('2026-07-06').locator('.week')).toHaveText('28');
+	});
+
 	test('a block shows its title once', async ({ planner }) => {
 		await planner.press('Shift+ArrowDown', 'Shift+ArrowDown');
 		await planner.type_title('Trip');

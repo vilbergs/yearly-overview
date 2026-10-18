@@ -449,8 +449,8 @@
 				{/if}
 			</span>
 			{#if entry?.description && !continues}<span class="note" aria-hidden="true"></span>{/if}
-			<!-- Titles matter more than week numbers when space is tight. -->
-			{#if day.weekday === 1 && !(entry?.title && !continues) && !holidays[day.key]}
+			<!-- Always shown; a long title is truncated to make room. -->
+			{#if day.weekday === 1}
 				<span class="week" aria-hidden="true">{day.week}</span>
 			{/if}
 		</button>
