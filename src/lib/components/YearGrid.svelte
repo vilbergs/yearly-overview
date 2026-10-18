@@ -7,6 +7,8 @@
 		details: () => void;
 		go_to: (key: string) => void;
 		message: (text: string) => void;
+		hide_month: (month: number) => void;
+		show_month: (month: number) => void;
 	};
 </script>
 
@@ -15,6 +17,7 @@
 	import {
 		MONTHS,
 		days_in_month,
+		local_month_names,
 		move_in_grid,
 		parse_date_key,
 		same_day_in_year,
@@ -47,6 +50,8 @@
 		highlight?: TagColor;
 		/** Public holiday names keyed by date. */
 		holidays?: Record<string, string>;
+		/** Collapsed months (1–12) of this year. */
+		hidden_months?: number[];
 	};
 
 	let {
@@ -58,7 +63,8 @@
 		anchor = $bindable(),
 		actions,
 		highlight,
-		holidays = {}
+		holidays = {},
+		hidden_months = []
 	}: Props = $props();
 
 	type Direction = 'up' | 'down' | 'left' | 'right';
@@ -73,12 +79,7 @@
 	const today = today_key();
 	const full_date = new Intl.DateTimeFormat(undefined, { dateStyle: 'full' });
 	// Month names follow the browser's language, like the weekday letters and holiday names.
-	const month_names = MONTHS.map((_, i) => {
-		const name = new Intl.DateTimeFormat(undefined, { month: 'long', timeZone: 'UTC' }).format(
-			new Date(Date.UTC(2000, i, 1))
-		);
-		return name.charAt(0).toLocaleUpperCase() + name.slice(1);
-	});
+	const month_names = local_month_names();
 	const weekday_names = Array.from({ length: 7 }, (_, i) =>
 		new Intl.DateTimeFormat(undefined, { weekday: 'short', timeZone: 'UTC' })
 			.format(new Date(Date.UTC(2023, 0, 1 + i)))
@@ -99,6 +100,15 @@
 	let pending_edit = false;
 
 	const target_set = $derived(new Set(targets));
+	const visible_days = $derived(days.filter((day) => !hidden_months.includes(day.month)));
+	const visible_months = $derived(
+		MONTHS.map((_, i) => i + 1).filter((month) => !hidden_months.includes(month))
+	);
+	const columns = $derived(
+		MONTHS.map((_, i) =>
+			hidden_months.includes(i + 1) ? 'var(--collapsed-width)' : 'minmax(6.5rem, 1fr)'
+		).join(' ')
+	);
 	const is_range = $derived(targets.length > 1);
 
 	/** Internal clipboard, so a copy/paste round trip keeps descriptions and colors. */
@@ -121,7 +131,7 @@
 
 	function move(direction: Direction, extend: boolean) {
 		const { month, day } = parse_date_key(active);
-		const target = move_in_grid(year, month, day, direction);
+		const target = move_in_grid(year, month, day, direction, hidden_months);
 		if (target) select(to_date_key(year, target.month, target.day), extend);
 	}
 
@@ -170,7 +180,7 @@
 			// Leave the edited block in the direction of travel.
 			const from = then === 'down' ? keys.at(-1)! : then === 'up' ? keys[0] : key;
 			const { month, day } = parse_date_key(from);
-			const target = move_in_grid(year, month, day, then);
+			const target = move_in_grid(year, month, day, then, hidden_months);
 			select(target ? to_date_key(year, target.month, target.day) : key);
 		} else {
 			select(key);
@@ -218,9 +228,8 @@
 		} else if (event.key === 'Home' || event.key === 'End') {
 			event.preventDefault();
 			const start = event.key === 'Home';
-			const key = mod
-				? to_date_key(year, start ? 1 : 12, start ? 1 : 31)
-				: to_date_key(year, month, start ? 1 : days_in_month(year, month));
+			const target = mod ? (start ? visible_months[0] : visible_months.at(-1)!) : month;
+			const key = to_date_key(year, target, start ? 1 : days_in_month(year, target));
 			select(key, event.shiftKey);
 		} else if (event.key === 'PageUp' || event.key === 'PageDown') {
 			event.preventDefault();
@@ -331,22 +340,53 @@
 	role="group"
 	aria-label="{year} calendar"
 	aria-describedby="grid-help"
+	style:grid-template-columns={columns}
 >
 	<p id="grid-help" class="visually-hidden">
 		Use the arrow keys to move between days, Shift with arrows to select several days, and start
 		typing to add a title. Press Control or Command plus slash for all shortcuts.
 	</p>
 
+	<!-- The hide and show buttons are for the pointer; the command palette does the same from the
+	     keyboard, so they stay out of the tab order. -->
 	{#each MONTHS as key, index (key)}
-		<div class="month-header" style="grid-column: {index + 1}; --hue: {index * 30};">
-			{month_names[index]}
-		</div>
+		{#if hidden_months.includes(index + 1)}
+			<button
+				type="button"
+				class="collapsed-month"
+				style="grid-column: {index + 1}; --hue: {index * 30};"
+				tabindex="-1"
+				aria-label="Show {month_names[index]}"
+				title="Show {month_names[index]}"
+				onclick={() => actions.show_month(index + 1)}
+			>
+				<span aria-hidden="true">{month_names[index]}</span>
+			</button>
+		{:else}
+			<div class="month-header" style="grid-column: {index + 1}; --hue: {index * 30};">
+				<span class="month-name">{month_names[index]}</span>
+				{#if visible_months.length > 1}
+					<button
+						type="button"
+						class="hide-month"
+						tabindex="-1"
+						aria-label="Hide {month_names[index]}"
+						title="Hide {month_names[index]}"
+						onclick={() => actions.hide_month(index + 1)}>‹</button
+					>
+				{/if}
+			</div>
+		{/if}
 	{/each}
 
-	{#each days as day, i (day.key)}
+	{#each visible_days as day, i (day.key)}
 		{@const entry = planner.entries[day.key]}
-		{@const previous = i > 0 && days[i - 1].month === day.month ? days[i - 1] : null}
-		{@const next = i < days.length - 1 && days[i + 1].month === day.month ? days[i + 1] : null}
+		{@const previous =
+			i > 0 && visible_days[i - 1].month === day.month ? visible_days[i - 1] : null}
+		{@const next =
+			i < visible_days.length - 1 && visible_days[i + 1].month === day.month
+				? visible_days[i + 1]
+				: null}
 		{@const continues = !!previous && same_entry(planner.entries[previous.key], entry)}
 		{@const continued = !!next && same_entry(planner.entries[next.key], entry)}
 		<!-- SvelteKit moves focus to the [autofocus] element after loading, so the calendar is
@@ -438,6 +478,7 @@
 
 <style>
 	.calendar {
+		--collapsed-width: 1.75rem;
 		position: relative;
 		display: grid;
 		grid-template-columns: repeat(12, minmax(6.5rem, 1fr));
@@ -461,10 +502,72 @@
 		position: sticky;
 		top: 0;
 		z-index: 2;
-		padding: var(--spacing-1) var(--spacing-2);
+		display: flex;
+		align-items: center;
+		gap: var(--spacing-1);
+		padding: var(--spacing-1) var(--spacing-1) var(--spacing-1) var(--spacing-2);
 		font-weight: 600;
 		border-right: 1px solid var(--border);
 		background-color: oklch(var(--header-l) var(--header-c) var(--hue));
+
+		&:hover .hide-month {
+			opacity: 1;
+		}
+	}
+
+	.month-name {
+		flex: 1;
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.hide-month {
+		flex-shrink: 0;
+		padding: 0 var(--spacing-1);
+		border: none;
+		background: transparent;
+		color: var(--text-muted);
+		line-height: 1.2;
+		opacity: 0;
+		cursor: pointer;
+
+		&:hover {
+			color: var(--text);
+			background-color: var(--selection);
+		}
+
+		/* Touch screens have no hover to reveal it. */
+		@media (hover: none) {
+			opacity: 1;
+		}
+	}
+
+	.collapsed-month {
+		grid-row: 1 / -1;
+		display: flex;
+		align-items: flex-start;
+		justify-content: center;
+		padding: var(--spacing-2) 0;
+		border: none;
+		border-right: 1px solid var(--border);
+		border-radius: 0;
+		background-color: oklch(var(--header-l) var(--header-c) var(--hue));
+		color: var(--text-muted);
+		font-weight: 600;
+		cursor: pointer;
+
+		& span {
+			position: sticky;
+			top: var(--spacing-2);
+			writing-mode: vertical-rl;
+			white-space: nowrap;
+		}
+
+		&:hover {
+			color: var(--text);
+		}
 	}
 
 	.day {

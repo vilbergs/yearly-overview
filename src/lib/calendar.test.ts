@@ -57,6 +57,13 @@ describe('move_in_grid', () => {
 		expect(move_in_grid(2025, 1, 5, 'left')).toBeNull();
 		expect(move_in_grid(2025, 12, 5, 'right')).toBeNull();
 	});
+
+	it('skips hidden months', () => {
+		expect(move_in_grid(2025, 1, 31, 'right', [2, 3])).toEqual({ month: 4, day: 30 });
+		expect(move_in_grid(2025, 4, 10, 'left', [2, 3])).toEqual({ month: 1, day: 10 });
+		expect(move_in_grid(2025, 3, 10, 'left', [1, 2])).toBeNull();
+		expect(move_in_grid(2025, 10, 10, 'right', [11, 12])).toBeNull();
+	});
 });
 
 describe('iso_week', () => {

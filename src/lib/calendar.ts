@@ -99,14 +99,16 @@ export function get_days_of_year(year: number): CalendarDay[] {
 
 /**
  * Moves within the month-per-column grid. Up/down step one day inside the
- * month; left/right jump to the same day in the neighbouring month, clamped to
- * that month's length. Returns null when the move would leave the year.
+ * month; left/right jump to the same day in the neighbouring month that isn't
+ * hidden, clamped to that month's length. Returns null when the move would
+ * leave the year.
  */
 export function move_in_grid(
 	year: number,
 	month: number,
 	day: number,
-	direction: 'up' | 'down' | 'left' | 'right'
+	direction: 'up' | 'down' | 'left' | 'right',
+	hidden: readonly number[] = []
 ): { month: number; day: number } | null {
 	switch (direction) {
 		case 'up':
@@ -114,13 +116,14 @@ export function move_in_grid(
 		case 'down':
 			return day < days_in_month(year, month) ? { month, day: day + 1 } : null;
 		case 'left':
-			return month > 1
-				? { month: month - 1, day: Math.min(day, days_in_month(year, month - 1)) }
+		case 'right': {
+			const step = direction === 'left' ? -1 : 1;
+			let target = month + step;
+			while (hidden.includes(target)) target += step;
+			return target >= 1 && target <= 12
+				? { month: target, day: Math.min(day, days_in_month(year, target)) }
 				: null;
-		case 'right':
-			return month < 12
-				? { month: month + 1, day: Math.min(day, days_in_month(year, month + 1)) }
-				: null;
+		}
 	}
 }
 
@@ -128,6 +131,15 @@ export function move_in_grid(
 export function same_day_in_year(key: string, year: number) {
 	const { month, day } = parse_date_key(key);
 	return to_date_key(year, month, Math.min(day, days_in_month(year, month)));
+}
+
+/** Month names in the browser's language, capitalized (`January`, `Januari`). */
+export function local_month_names(locale?: string) {
+	const formatter = new Intl.DateTimeFormat(locale, { month: 'long', timeZone: 'UTC' });
+	return MONTHS.map((_, i) => {
+		const name = formatter.format(new Date(Date.UTC(2000, i, 1)));
+		return name.charAt(0).toLocaleUpperCase() + name.slice(1);
+	});
 }
 
 function month_names(locale?: string) {

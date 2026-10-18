@@ -3,10 +3,13 @@
 	import {
 		MAX_YEAR,
 		MIN_YEAR,
+		days_in_month,
 		get_days_of_year,
+		local_month_names,
 		parse_date_key,
 		same_day_in_year,
 		to_date,
+		to_date_key,
 		today_key
 	} from '$lib/calendar';
 	import {
@@ -33,6 +36,12 @@
 	} from '$lib/settings';
 	import { STATUS_LABELS, SYNC_KEY, Sync } from '$lib/sync.svelte';
 	import { target_keys } from '$lib/selection';
+	import {
+		HIDDEN_MONTHS_KEY,
+		load_hidden_months,
+		nearest_visible_month,
+		save_hidden_months
+	} from '$lib/view';
 	import CategoriesDialog from '$lib/components/CategoriesDialog.svelte';
 	import HolidaysDialog from '$lib/components/HolidaysDialog.svelte';
 	import { get_holidays } from '$lib/holidays';
@@ -63,6 +72,10 @@
 	let year = $state(current_year);
 	let active = $state(today);
 	let anchor = $state(today);
+
+	const month_names = local_month_names();
+	let hidden_months_by_year = $state(load_hidden_months(storage));
+	const hidden_months = $derived(hidden_months_by_year[year] ?? []);
 
 	const days = $derived(get_days_of_year(year));
 	const key_index = $derived(new Map(days.map((day, i) => [day.key, i])));
@@ -128,8 +141,17 @@
 	}
 
 	async function go_to(key: string, range_start = key) {
-		const target_year = parse_date_key(key).year;
+		const { year: target_year, month: target_month } = parse_date_key(key);
 		if (target_year < MIN_YEAR || target_year > MAX_YEAR) return;
+
+		// Going to a day (search, undo, today) brings back its month if it was hidden.
+		const hidden = hidden_months_by_year[target_year] ?? [];
+		if (hidden.includes(target_month)) {
+			set_hidden_months(
+				target_year,
+				hidden.filter((month) => month !== target_month)
+			);
+		}
 
 		year = target_year;
 		active = key;
@@ -140,6 +162,62 @@
 
 	function focus_grid() {
 		grid?.focus_active();
+	}
+
+	// ── Hidden months ────────────────────────────────────────────────────────
+
+	function set_hidden_months(for_year: number, months: number[]) {
+		const next = { ...hidden_months_by_year };
+		if (months.length) next[for_year] = [...new Set(months)].sort((a, b) => a - b);
+		else delete next[for_year];
+		hidden_months_by_year = next;
+		save_hidden_months(storage, next);
+	}
+
+	/** Hides months of the shown year, moving the cursor out of them. */
+	function hide_months(months: number[]) {
+		const hidden = [...new Set([...hidden_months, ...months])];
+		if (hidden.length >= 12) {
+			show_message('At least one month stays visible');
+			return false;
+		}
+
+		set_hidden_months(year, hidden);
+		const { month, day } = parse_date_key(active);
+		if (hidden.includes(month)) {
+			const target = nearest_visible_month(month, hidden);
+			active = to_date_key(year, target, Math.min(day, days_in_month(year, target)));
+		}
+		if (hidden.includes(parse_date_key(anchor).month)) anchor = active;
+		focus_grid();
+		return true;
+	}
+
+	function hide_month(month: number) {
+		if (hide_months([month])) {
+			show_message(`${month_names[month - 1]} hidden · click its column to show it again`);
+		}
+	}
+
+	function hide_past_months() {
+		const past = month_names
+			.map((_, i) => i + 1)
+			.filter((month) => month < parse_date_key(today).month);
+		if (hide_months(past)) show_message('Past months hidden');
+	}
+
+	function show_month(month: number) {
+		set_hidden_months(
+			year,
+			hidden_months.filter((hidden) => hidden !== month)
+		);
+		focus_grid();
+	}
+
+	function show_all_months() {
+		set_hidden_months(year, []);
+		show_message('All months shown');
+		focus_grid();
 	}
 
 	// ── Actions shared by the keyboard, the palette and the toolbar ──────────
@@ -256,7 +334,9 @@
 		highlight: toggle_highlight,
 		details: edit_details,
 		go_to: (key) => go_to(key),
-		message: show_message
+		message: show_message,
+		hide_month,
+		show_month
 	};
 
 	const sync_commands = $derived.by((): Command[] =>
@@ -374,7 +454,50 @@
 		return commands;
 	});
 
-	const commands = $derived([...base_commands, ...category_commands, ...sync_commands]);
+	const month_commands = $derived.by((): Command[] => {
+		const active_month = parse_date_key(active).month;
+		const commands: Command[] = [];
+		if (hidden_months.length < 11) {
+			commands.push({
+				id: 'hide-month',
+				label: `Hide ${month_names[active_month - 1]}`,
+				keywords: 'collapse month column',
+				run: () => hide_month(active_month)
+			});
+		}
+		if (year === current_year && parse_date_key(today).month > 1) {
+			commands.push({
+				id: 'hide-past-months',
+				label: 'Hide past months',
+				keywords: 'collapse month columns earlier',
+				run: hide_past_months
+			});
+		}
+		for (const month of hidden_months) {
+			commands.push({
+				id: `show-month-${month}`,
+				label: `Show ${month_names[month - 1]}`,
+				keywords: 'hidden month column expand',
+				run: () => show_month(month)
+			});
+		}
+		if (hidden_months.length > 1) {
+			commands.push({
+				id: 'show-all-months',
+				label: 'Show all months',
+				keywords: 'hidden month columns expand',
+				run: show_all_months
+			});
+		}
+		return commands;
+	});
+
+	const commands = $derived([
+		...base_commands,
+		...month_commands,
+		...category_commands,
+		...sync_commands
+	]);
 
 	function on_window_keydown(event: KeyboardEvent) {
 		const mod = has_mod(event);
@@ -418,6 +541,7 @@
 		// Keep multiple open tabs in sync.
 		if (event.key === STORAGE_KEY || event.key === SETTINGS_KEY) planner.reload();
 		if (event.key === SYNC_KEY) sync.storage_changed();
+		if (event.key === HIDDEN_MONTHS_KEY) hidden_months_by_year = load_hidden_months(storage);
 	}}
 />
 
@@ -573,6 +697,7 @@
 		{actions}
 		{highlight}
 		{holidays}
+		{hidden_months}
 	/>
 </main>
 

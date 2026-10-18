@@ -30,6 +30,11 @@ the next day.
 Name the six colors ("Work", "Holiday", …) with **Name categories…** in the menu or palette;
 named categories appear as a legend whose buttons highlight one category across the year.
 
+**Hide months** you don't need right now with the **‹** in a month's header, or _Hide past
+months_ in the palette; a hidden month shrinks to a narrow strip that brings it back when
+clicked, and going to one of its days shows it again. Hidden months are remembered per year on
+each device and aren't synced.
+
 **Public holidays** for 207 countries (and their regions) can be switched on under _Public
 holidays…_; they show as red days with their names. Holiday data comes from
 [date-holidays](https://github.com/commenthol/date-holidays) (CC BY 3.0) and is only downloaded
