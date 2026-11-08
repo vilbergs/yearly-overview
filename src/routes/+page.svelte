@@ -49,6 +49,7 @@
 	import EntryDialog from '$lib/components/EntryDialog.svelte';
 	import ShortcutsDialog from '$lib/components/ShortcutsDialog.svelte';
 	import YearGrid, { type GridActions } from '$lib/components/YearGrid.svelte';
+	import Icon from '$lib/components/Icon.svelte';
 
 	const storage = get_browser_storage();
 	const planner = new Planner(storage);
@@ -553,7 +554,7 @@
 			aria-label="Previous year"
 			title="Previous year (Page Up)"
 			disabled={year <= MIN_YEAR}
-			onclick={() => go_to(same_day_in_year(active, year - 1))}>‹</button
+			onclick={() => go_to(same_day_in_year(active, year - 1))}><Icon name="chevron-left" /></button
 		>
 		<h1>{year}</h1>
 		<button
@@ -562,7 +563,8 @@
 			aria-label="Next year"
 			title="Next year (Page Down)"
 			disabled={year >= MAX_YEAR}
-			onclick={() => go_to(same_day_in_year(active, year + 1))}>›</button
+			onclick={() => go_to(same_day_in_year(active, year + 1))}
+			><Icon name="chevron-right" /></button
 		>
 		<button type="button" onclick={() => go_to(today)}>Today</button>
 	</nav>
@@ -803,15 +805,23 @@
 
 		& h1 {
 			min-width: 4ch;
-			font-size: var(--fs-xl);
+			padding-inline: var(--spacing-1);
+			font-size: var(--fs-3xl);
+			line-height: 1.1;
 			text-align: center;
-			font-variant-numeric: tabular-nums;
+			font-variant-numeric: lining-nums tabular-nums;
 		}
 
 		& .icon {
 			padding-inline: var(--spacing-2);
 			font-size: var(--fs-lg);
+			letter-spacing: 0;
 			line-height: 1.2;
+		}
+
+		& .icon :global(svg) {
+			width: 1em;
+			height: 1em;
 		}
 
 		& button:disabled {
@@ -829,11 +839,14 @@
 		gap: var(--spacing-1);
 		list-style: none;
 
+		/* Category chips keep the user's own names, so no spaced capitals. */
 		& button {
 			gap: var(--spacing-1);
 			padding: 0 var(--spacing-2);
 			border-color: transparent;
 			font-size: var(--fs-xs);
+			letter-spacing: 0.02em;
+			text-transform: none;
 
 			&[aria-pressed='true'] {
 				border-color: var(--accent);
@@ -844,21 +857,22 @@
 		& .swatch {
 			width: 0.7rem;
 			height: 0.7rem;
-			border-radius: 3px;
+			border-radius: var(--radius-block);
 			background-color: oklch(var(--tag-bar-l) var(--tag-bar-c) var(--hue));
 		}
 	}
 
 	.sync {
+		/* Fjara's state mark: a small flat-topped basalt hexagon. */
 		& .dot {
-			width: 0.55rem;
-			height: 0.55rem;
-			border-radius: 50%;
+			width: 0.65rem;
+			height: 0.58rem;
+			clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%);
 			background-color: var(--text-faint);
 		}
 
 		&[data-status='synced'] .dot {
-			background-color: oklch(0.65 0.17 150);
+			background-color: var(--ok);
 		}
 
 		&[data-status='syncing'] .dot {
@@ -871,10 +885,17 @@
 		}
 	}
 
+	/* Reads as a field, not a button: sentence case, hairline underline. */
 	.search {
 		min-width: min(20rem, 100%);
 		justify-content: space-between;
-		color: var(--text-muted);
+		border-color: transparent transparent var(--border-strong);
+		background-color: transparent;
+		color: var(--text-faint);
+		font-size: var(--fs-sm);
+		font-weight: 400;
+		letter-spacing: normal;
+		text-transform: none;
 	}
 
 	.menu {
@@ -899,15 +920,18 @@
 		flex-direction: column;
 		min-width: 15rem;
 		padding: var(--spacing-1);
-		border: 1px solid var(--border-strong);
-		border-radius: var(--radius-lg);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-block);
 		background-color: var(--surface-raised);
-		box-shadow: var(--shadow-lg);
 
 		& button {
 			justify-content: space-between;
 			border: none;
 			background: transparent;
+			font-size: var(--fs-sm);
+			font-weight: 400;
+			letter-spacing: normal;
+			text-transform: none;
 			text-align: left;
 
 			&:hover,
@@ -983,6 +1007,7 @@
 
 	.print-only {
 		display: none;
+		font-family: var(--font-display);
 	}
 
 	@media (max-width: 40rem) {

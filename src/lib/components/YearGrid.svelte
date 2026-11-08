@@ -38,6 +38,7 @@
 	import { has_mod, is_printable } from '$lib/keyboard';
 	import type { Planner } from '$lib/planner.svelte';
 	import { color_label } from '$lib/settings';
+	import Icon from './Icon.svelte';
 
 	type Props = {
 		planner: Planner;
@@ -372,7 +373,7 @@
 						tabindex="-1"
 						aria-label="Hide {month_names[index]}"
 						title="Hide {month_names[index]}"
-						onclick={() => actions.hide_month(index + 1)}>‹</button
+						onclick={() => actions.hide_month(index + 1)}><Icon name="chevron-left" /></button
 					>
 				{/if}
 			</div>
@@ -506,8 +507,12 @@
 		align-items: center;
 		gap: var(--spacing-1);
 		padding: var(--spacing-1) var(--spacing-1) var(--spacing-1) var(--spacing-2);
-		font-weight: 600;
+		font-family: var(--font-display);
+		font-size: var(--fs-lg);
+		font-weight: 500;
+		line-height: 1.25;
 		border-right: 1px solid var(--border);
+		border-bottom: 1px solid var(--border);
 		background-color: oklch(var(--header-l) var(--header-c) var(--hue));
 
 		&:hover .hide-month {
@@ -521,6 +526,11 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
+	}
+
+	.hide-month :global(svg) {
+		width: 0.85em;
+		height: 0.85em;
 	}
 
 	.hide-month {
@@ -555,7 +565,10 @@
 		border-radius: 0;
 		background-color: oklch(var(--header-l) var(--header-c) var(--hue));
 		color: var(--text-muted);
-		font-weight: 600;
+		font-family: var(--font-display);
+		font-size: var(--fs-md);
+		font-weight: 500;
+		letter-spacing: 0.02em;
 		cursor: pointer;
 
 		& span {
@@ -577,8 +590,9 @@
 		gap: 0.3em;
 		min-width: 0;
 		padding: 0 var(--spacing-1) 0 var(--spacing-2);
-		border-bottom: 1px solid var(--border);
+		border: none;
 		border-right: 1px solid var(--border);
+		border-radius: 0;
 		background-color: var(--surface);
 		color: var(--text);
 		text-align: left;
@@ -596,8 +610,9 @@
 			color: var(--danger);
 		}
 
+		/* One hairline per week; days within a week are separated by space alone. */
 		&.week-start {
-			border-top: 1px solid var(--border-strong);
+			border-top: 1px solid var(--border);
 		}
 
 		&.has-entry::before {
@@ -611,13 +626,15 @@
 		&.tagged {
 			background-color: oklch(var(--tag-l) var(--tag-c) var(--hue));
 
+			/* The faint ink drops just under 4.5:1 on the cooler tag fills. */
+			& .weekday,
+			& .week {
+				color: var(--text-muted);
+			}
+
 			&::before {
 				background-color: oklch(var(--tag-bar-l) var(--tag-bar-c) var(--hue));
 			}
-		}
-
-		&.continued {
-			border-bottom-color: transparent;
 		}
 
 		&.dimmed {
@@ -647,7 +664,7 @@
 		&.today .day-number {
 			color: var(--accent-contrast);
 			background-color: var(--accent);
-			border-radius: var(--radius-sm);
+			border-radius: var(--radius-block);
 		}
 	}
 
@@ -661,6 +678,8 @@
 	}
 
 	.holiday-name {
+		font-family: var(--font-display);
+		font-size: 1.05em;
 		font-weight: 400;
 		font-style: italic;
 		color: var(--text-muted);
@@ -681,11 +700,12 @@
 		font-weight: 500;
 	}
 
+	/* Has a description: Fjara's state mark, a small flat-topped hexagon. */
 	.note {
 		flex-shrink: 0;
-		width: 5px;
-		height: 5px;
-		border-radius: 50%;
+		width: 7px;
+		height: 6px;
+		clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%);
 		background-color: var(--text-faint);
 	}
 
@@ -701,12 +721,13 @@
 		z-index: 3;
 		padding: 0 var(--spacing-2);
 		border: 2px solid var(--accent);
-		border-radius: var(--radius-xs);
+		border-radius: var(--radius-block);
 		background-color: var(--surface-raised);
 		color: var(--text);
 		font-size: var(--fs-sm);
 		font-weight: 500;
-		box-shadow: var(--shadow-lg);
+		letter-spacing: normal;
+		text-transform: none;
 		outline: none;
 	}
 

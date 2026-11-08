@@ -1,65 +1,77 @@
+/*
+ * The planner's semantic colours, pointed at Fjara's tokens (fjara.css, same layer, imported first).
+ * Fjara: ink on paper, hairlines to separate, colour only for meaning. eldur = urgency/danger,
+ * mosi = done/ok, jokull = focus and selection.
+ */
 @layer colors {
 	:root {
-		--gray-50: oklch(0.97 0.005 105);
-		--gray-100: oklch(0.9 0.005 105);
-		--gray-200: oklch(0.8 0.01 103);
-		--gray-300: oklch(0.75 0.01 103);
-		--gray-400: oklch(0.7 0.01 103);
-		--gray-500: oklch(0.6 0.01 103);
-		--gray-600: oklch(0.5 0.01 103);
-		--gray-700: oklch(0.4 0.01 103);
-		--gray-800: oklch(0.3 0.01 103);
-		--gray-900: oklch(0.2 0.01 103);
+		/* The old gray scale, now Fjara's basalt. */
+		--gray-50: var(--basalt-50);
+		--gray-100: var(--basalt-100);
+		--gray-200: var(--basalt-200);
+		--gray-300: var(--basalt-300);
+		--gray-400: var(--basalt-400);
+		--gray-500: var(--basalt-500);
+		--gray-600: var(--basalt-600);
+		--gray-700: var(--basalt-700);
+		--gray-800: var(--basalt-800);
+		--gray-900: var(--basalt-900);
 
-		/* Semantic tokens. Components use these so dark mode only needs to swap them. */
-		color-scheme: light dark;
-		--bg: oklch(1 0 0);
-		--surface: oklch(1 0 0);
-		--surface-muted: oklch(0.97 0.004 250);
-		--surface-raised: oklch(1 0 0);
-		--border: oklch(0.92 0.005 250);
-		--border-strong: oklch(0.8 0.01 250);
-		--text: oklch(0.22 0.01 250);
-		--text-muted: oklch(0.42 0.01 250);
-		--text-faint: oklch(0.5 0.01 250);
-		--accent: oklch(0.5 0.18 255);
-		--accent-contrast: oklch(1 0 0);
-		--selection: oklch(0.6 0.16 255 / 0.16);
-		--danger: oklch(0.52 0.19 25);
-		--warning: oklch(0.5 0.14 60);
+		/* Semantic tokens. Components use these; the Fjara theme decides what they resolve to. */
+		--bg: var(--paper);
+		--surface: var(--paper);
+		--surface-muted: var(--paper-2);
+		--surface-raised: var(--paper);
+		--border: var(--line);
+		--border-strong: var(--line-strong);
+		--text: var(--ink);
+		--text-muted: var(--muted);
+		--text-faint: var(--faint);
+		--accent: var(--jokull);
+		--accent-contrast: var(--paper);
+		--selection: color-mix(in srgb, var(--jokull) 16%, transparent);
+		--danger: var(--eldur);
+		--warning: var(--eldur);
+		--ok: var(--mosi);
+		--scrim: color-mix(in srgb, var(--basalt-950) 32%, transparent);
 
-		/* Hue-driven fills: month headers and color tags set --hue. */
-		--header-l: 0.9;
-		--header-c: 0.06;
-		--tag-l: 0.91;
-		--tag-c: 0.07;
-		--tag-bar-l: 0.62;
-		--tag-bar-c: 0.17;
+		/*
+		 * Hue-driven fills: month headers and colour tags set --hue. The hues encode the user's data,
+		 * so they stay; lightness and chroma are tuned toward Fjara's warm, quiet paper. Shared with
+		 * the HQ dashboard, keep the --tag-* values in step with it.
+		 */
+		--header-l: 0.92;
+		--header-c: 0.022;
+		--tag-l: 0.9;
+		--tag-c: 0.04;
+		--tag-bar-l: 0.58;
+		--tag-bar-c: 0.11;
 	}
 
 	@media (prefers-color-scheme: dark) {
-		:root {
-			--bg: oklch(0.17 0.008 250);
-			--surface: oklch(0.2 0.008 250);
-			--surface-muted: oklch(0.18 0.008 250);
-			--surface-raised: oklch(0.25 0.01 250);
-			--border: oklch(0.28 0.01 250);
-			--border-strong: oklch(0.38 0.01 250);
-			--text: oklch(0.93 0.005 250);
-			--text-muted: oklch(0.78 0.01 250);
-			--text-faint: oklch(0.74 0.01 250);
-			--accent: oklch(0.68 0.15 255);
-			--accent-contrast: oklch(0.15 0.01 250);
-			--selection: oklch(0.68 0.15 255 / 0.22);
-			--danger: oklch(0.7 0.17 25);
-			--warning: oklch(0.78 0.13 70);
+		:root:not([data-theme]) {
+			--selection: color-mix(in srgb, var(--jokull) 22%, transparent);
+			--scrim: color-mix(in srgb, var(--basalt-950) 60%, transparent);
 
-			--header-l: 0.32;
-			--header-c: 0.05;
-			--tag-l: 0.3;
-			--tag-c: 0.06;
+			--header-l: 0.25;
+			--header-c: 0.02;
+			--tag-l: 0.29;
+			--tag-c: 0.035;
 			--tag-bar-l: 0.72;
-			--tag-bar-c: 0.15;
+			--tag-bar-c: 0.1;
 		}
+	}
+
+	:root[data-theme='dark'],
+	:root[data-theme='ryd-dark'] {
+		--selection: color-mix(in srgb, var(--jokull) 22%, transparent);
+		--scrim: color-mix(in srgb, var(--basalt-950) 60%, transparent);
+
+		--header-l: 0.25;
+		--header-c: 0.02;
+		--tag-l: 0.29;
+		--tag-c: 0.035;
+		--tag-bar-l: 0.72;
+		--tag-bar-c: 0.1;
 	}
 }

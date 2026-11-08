@@ -108,7 +108,7 @@
 	}
 
 	h2 {
-		font-size: var(--fs-lg);
+		font-size: var(--fs-2xl);
 	}
 
 	.field {
@@ -117,15 +117,19 @@
 		gap: var(--spacing-1);
 	}
 
+	/* Fjara labels: spaced capitals in the faint ink. */
 	label {
-		font-size: var(--fs-sm);
+		font-size: 11px;
 		font-weight: 500;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: var(--text-faint);
 	}
 
 	select {
 		padding: var(--spacing-2);
 		border: 1px solid var(--border-strong);
-		border-radius: var(--radius-md);
+		border-radius: var(--radius-block);
 		background-color: var(--surface);
 		color: var(--text);
 		font-size: var(--fs-md);

@@ -1,17 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-	<rect width="512" height="512" rx="112" fill="#1d5fc4"/>
-	<g fill="#ffffff">
-		<rect x="96" y="112" width="320" height="56" rx="16"/>
-	</g>
-	<g fill="#ffffff" fill-opacity="0.9">
-		<rect x="96" y="200" width="88" height="56" rx="12"/>
-		<rect x="212" y="200" width="88" height="56" rx="12"/>
-		<rect x="328" y="200" width="88" height="56" rx="12"/>
-		<rect x="96" y="284" width="88" height="56" rx="12"/>
-		<rect x="212" y="284" width="88" height="56" rx="12" fill="#ffd166" fill-opacity="1"/>
-		<rect x="328" y="284" width="88" height="56" rx="12"/>
-		<rect x="96" y="368" width="88" height="56" rx="12"/>
-		<rect x="212" y="368" width="88" height="56" rx="12"/>
-		<rect x="328" y="368" width="88" height="56" rx="12"/>
-	</g>
+  <rect width="512" height="512" fill="#f1efe9"></rect>
+  
+  <polygon points="176,118 336,118 416,256 336,394 176,394 96,256" fill="#17191a"></polygon>
+  <path d="M128 300 C 176 284, 214 284, 256 300 S 336 316, 384 300" fill="none" stroke="#f1efe9" stroke-width="16" stroke-linecap="round"></path>
 </svg>

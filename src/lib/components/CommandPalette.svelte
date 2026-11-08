@@ -220,7 +220,7 @@
 		align-items: center;
 		gap: var(--spacing-3);
 		padding: var(--spacing-2) var(--spacing-3);
-		border-radius: var(--radius-md);
+		border-radius: var(--radius-block);
 		font-size: var(--fs-sm);
 		cursor: pointer;
 
@@ -251,7 +251,7 @@
 		flex-shrink: 0;
 		width: 0.6rem;
 		height: 0.6rem;
-		border-radius: 50%;
+		border-radius: var(--radius-block);
 		background-color: oklch(var(--tag-bar-l) var(--tag-bar-c) var(--hue));
 	}
 </style>

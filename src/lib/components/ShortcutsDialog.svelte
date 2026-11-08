@@ -47,7 +47,7 @@
 		margin-bottom: var(--spacing-4);
 
 		& h2 {
-			font-size: var(--fs-lg);
+			font-size: var(--fs-2xl);
 		}
 	}
 
@@ -58,11 +58,12 @@
 	}
 
 	h3 {
-		margin-bottom: var(--spacing-2);
-		font-size: var(--fs-sm);
-		color: var(--text-muted);
+		margin-bottom: var(--spacing-3);
+		font-size: 11px;
+		font-weight: 500;
+		letter-spacing: 0.14em;
 		text-transform: uppercase;
-		letter-spacing: 0.04em;
+		color: var(--text-faint);
 	}
 
 	dl {

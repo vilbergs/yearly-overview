@@ -1,0 +1,195 @@
+/* Fjara design system tokens, generated from its tokens.json (claude.ai/artifact/KZYYFQjw6NofPCStwNq8jv).
+   Vendored unchanged apart from formatting; update by replacing this file. main.css imports it into the
+   colors layer. Surf themes follow prefers-color-scheme; data-theme="light|dark|ryd|ryd-dark" on <html>
+   overrides. */
+:root {
+	color-scheme: light;
+	--font-display: 'EB Garamond', 'Iowan Old Style', Georgia, serif;
+	--font-text: 'Hanken Grotesk', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+	--font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+	--radius-block: 2px;
+	--radius-sheet: 12px;
+	--radius-circle: 50%;
+	--space-page: 26px;
+	--space-section: 46px;
+	--space-row: 16px;
+	--space-label: 14px;
+	--space-context: 30px;
+	--space-sheet: 24px;
+	--space-close: 52px;
+	--space-chip: 8px;
+	--paper: #f4f4f2;
+	--paper-2: #e8e9e7;
+	--ink: #1e2122;
+	--muted: #505453;
+	--faint: #636766;
+	--line: #d5d7d5;
+	--line-strong: #7f8382;
+	--on-ink: #f4f4f2;
+	--on-ink-muted: #a0a4a4;
+	--eldur: #952201;
+	--mosi: #425b37;
+	--jokull: #1d5b6e;
+	--eldur-on-ink: #e58067;
+	--jokull-on-ink: #78a8ba;
+}
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme]) {
+		color-scheme: dark;
+		--paper: #131516;
+		--paper-2: #1e2122;
+		--ink: #e8e9e7;
+		--muted: #bec1c1;
+		--faint: #a0a4a4;
+		--line: #393d3e;
+		--line-strong: #7f8382;
+		--on-ink: #131516;
+		--on-ink-muted: #636766;
+		--eldur: #e58067;
+		--mosi: #91a887;
+		--jokull: #78a8ba;
+		--eldur-on-ink: #952201;
+		--jokull-on-ink: #1d5b6e;
+	}
+}
+:root[data-theme='dark'] {
+	color-scheme: dark;
+	--paper: #131516;
+	--paper-2: #1e2122;
+	--ink: #e8e9e7;
+	--muted: #bec1c1;
+	--faint: #a0a4a4;
+	--line: #393d3e;
+	--line-strong: #7f8382;
+	--on-ink: #131516;
+	--on-ink-muted: #636766;
+	--eldur: #e58067;
+	--mosi: #91a887;
+	--jokull: #78a8ba;
+	--eldur-on-ink: #952201;
+	--jokull-on-ink: #1d5b6e;
+}
+:root[data-theme='ryd'] {
+	color-scheme: light;
+	--paper: #fff1e3;
+	--paper-2: #f3e5d7;
+	--ink: #2d2011;
+	--muted: #604f3d;
+	--faint: #73614f;
+	--line: #e2d3c3;
+	--line-strong: #8f7d6a;
+	--on-ink: #fff1e3;
+	--on-ink-muted: #ae9c8a;
+	--eldur: #8e2d00;
+	--mosi: #1c5f53;
+	--jokull: #325383;
+	--eldur-on-ink: #e08464;
+	--jokull-on-ink: #84a2ce;
+}
+:root[data-theme='ryd-dark'] {
+	color-scheme: dark;
+	--paper: #1d1105;
+	--paper-2: #2d2011;
+	--ink: #f3e5d7;
+	--muted: #cbbaaa;
+	--faint: #ae9c8a;
+	--line: #4a3a29;
+	--line-strong: #8f7d6a;
+	--on-ink: #1d1105;
+	--on-ink-muted: #73614f;
+	--eldur: #e08464;
+	--mosi: #79aca0;
+	--jokull: #84a2ce;
+	--eldur-on-ink: #8e2d00;
+	--jokull-on-ink: #325383;
+}
+:root {
+	--basalt-50: #f4f4f2;
+	--basalt-100: #e8e9e7;
+	--basalt-200: #d5d7d5;
+	--basalt-300: #bec1c1;
+	--basalt-400: #a0a4a4;
+	--basalt-500: #7f8382;
+	--basalt-600: #636766;
+	--basalt-700: #505453;
+	--basalt-800: #393d3e;
+	--basalt-900: #1e2122;
+	--basalt-950: #131516;
+	--eldur-50: #fff0ec;
+	--eldur-100: #fce1da;
+	--eldur-200: #fcc8bb;
+	--eldur-300: #f5a794;
+	--eldur-400: #e58067;
+	--eldur-500: #cb573c;
+	--eldur-600: #ad3619;
+	--eldur-700: #952201;
+	--eldur-800: #711801;
+	--eldur-900: #440a00;
+	--eldur-950: #2b0400;
+	--mosi-50: #f1f5f0;
+	--mosi-100: #e4eae2;
+	--mosi-200: #cedaca;
+	--mosi-300: #b2c4ab;
+	--mosi-400: #91a887;
+	--mosi-500: #6f8964;
+	--mosi-600: #536d48;
+	--mosi-700: #425b37;
+	--mosi-800: #2e4424;
+	--mosi-900: #172810;
+	--mosi-950: #0b1806;
+	--jokull-50: #eef5f8;
+	--jokull-100: #dfeaef;
+	--jokull-200: #c3dae3;
+	--jokull-300: #a1c4d2;
+	--jokull-400: #78a8ba;
+	--jokull-500: #51899d;
+	--jokull-600: #316d82;
+	--jokull-700: #1d5b6e;
+	--jokull-800: #064455;
+	--jokull-900: #022733;
+	--jokull-950: #00171f;
+	--jarn-50: #fff1e3;
+	--jarn-100: #f3e5d7;
+	--jarn-200: #e2d3c3;
+	--jarn-300: #cbbaaa;
+	--jarn-400: #ae9c8a;
+	--jarn-500: #8f7d6a;
+	--jarn-600: #73614f;
+	--jarn-700: #604f3d;
+	--jarn-800: #4a3a29;
+	--jarn-900: #2d2011;
+	--jarn-950: #1d1105;
+	--ryd-50: #fef0ec;
+	--ryd-100: #fbe2d9;
+	--ryd-200: #f9caba;
+	--ryd-300: #f1aa92;
+	--ryd-400: #e08464;
+	--ryd-500: #c65d38;
+	--ryd-600: #a83d11;
+	--ryd-700: #8e2d00;
+	--ryd-800: #6b2001;
+	--ryd-900: #411000;
+	--ryd-950: #290700;
+	--eir-50: #eef5f3;
+	--eir-100: #dfebe8;
+	--eir-200: #c4dcd6;
+	--eir-300: #a1c7be;
+	--eir-400: #79aca0;
+	--eir-500: #518e81;
+	--eir-600: #307265;
+	--eir-700: #1c5f53;
+	--eir-800: #04483e;
+	--eir-900: #012a23;
+	--eir-950: #001914;
+	--stal-50: #eff4fb;
+	--stal-100: #e1e9f4;
+	--stal-200: #c8d7ed;
+	--stal-300: #a8bfe2;
+	--stal-400: #84a2ce;
+	--stal-500: #6081b4;
+	--stal-600: #436598;
+	--stal-700: #325383;
+	--stal-800: #203d68;
+	--stal-900: #0c2242;
+	--stal-950: #04132b;
+}

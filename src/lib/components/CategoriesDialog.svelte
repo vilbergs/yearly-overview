@@ -88,7 +88,7 @@
 	}
 
 	h2 {
-		font-size: var(--fs-lg);
+		font-size: var(--fs-2xl);
 	}
 
 	.hint {
@@ -112,7 +112,7 @@
 	.swatch {
 		width: 1.5rem;
 		height: 1.5rem;
-		border-radius: var(--radius-sm);
+		border-radius: var(--radius-block);
 		border: 3px solid oklch(var(--tag-bar-l) var(--tag-bar-c) var(--hue));
 		background-color: oklch(var(--tag-l) var(--tag-c) var(--hue));
 	}

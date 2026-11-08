@@ -148,15 +148,19 @@
 	}
 
 	h2 {
-		font-size: var(--fs-md);
+		font-size: var(--fs-2xl);
 	}
 
+	/* Fjara labels: spaced capitals in the faint ink. */
 	label:not(.swatch) {
 		display: flex;
 		flex-direction: column;
-		gap: var(--spacing-1);
-		font-size: var(--fs-sm);
+		gap: var(--spacing-2);
+		font-size: 11px;
 		font-weight: 500;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: var(--text-faint);
 	}
 
 	fieldset {
@@ -167,14 +171,20 @@
 
 	legend {
 		margin-bottom: var(--spacing-2);
-		font-size: var(--fs-sm);
+		font-size: 11px;
 		font-weight: 500;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: var(--text-faint);
 	}
 
 	small {
 		margin-left: var(--spacing-2);
 		color: var(--text-faint);
+		font-size: var(--fs-xs);
 		font-weight: 400;
+		letter-spacing: normal;
+		text-transform: none;
 	}
 
 	.swatches {
@@ -189,7 +199,7 @@
 		place-items: center;
 		min-width: 2rem;
 		height: 2rem;
-		border-radius: var(--radius-md);
+		border-radius: var(--radius-block);
 		border: 1px solid var(--border-strong);
 		background-color: oklch(var(--tag-l) var(--tag-c) var(--hue));
 		font-size: var(--fs-xs);
@@ -230,7 +240,7 @@
 			content: '';
 			width: 0.75rem;
 			height: 0.75rem;
-			border-radius: 50%;
+			border-radius: var(--radius-block);
 			background-color: oklch(var(--tag-bar-l) var(--tag-bar-c) var(--hue));
 		}
 	}
